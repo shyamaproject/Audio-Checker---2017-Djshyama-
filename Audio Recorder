@@ -1,0 +1,385 @@
+using NAudio.CoreAudioApi;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace Moon_Audio_Recorder
+{
+    public partial class djshyamaaudio : Form
+    {
+        private PlaybackRecorder recorder;
+
+        private string currentOutput;
+
+        private bool dragging = false;
+
+        private Point startpoint = new Point(0, 0);
+        public bool True { get; private set; }
+
+        private int _timeKeep;
+
+        public djshyamaaudio()
+        {
+            InitializeComponent();
+
+            Panel pnlTop = new Panel() { Height = 4, Dock = DockStyle.Top, BackColor = Color.WhiteSmoke };
+            this.Controls.Add(pnlTop);
+            Panel pnlRight = new Panel() { Width = 4, Dock = DockStyle.Right, BackColor = Color.WhiteSmoke };
+            this.Controls.Add(pnlRight);
+            Panel pnlBottom = new Panel() { Height = 4, Dock = DockStyle.Bottom, BackColor = Color.WhiteSmoke };
+            this.Controls.Add(pnlBottom);
+            Panel pnlLeft = new Panel() { Width = 4, Dock = DockStyle.Left, BackColor = Color.WhiteSmoke };
+            this.Controls.Add(pnlLeft);
+
+        }
+
+        #region Header Class
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            dragging = true;
+            startpoint = new Point(e.X, e.Y);
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                Point p = PointToScreen(e.Location);
+                Location = new Point(p.X - this.startpoint.X, p.Y - this.startpoint.Y);
+
+            }
+
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragging = false;
+        }
+
+        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        {
+            dragging = true;
+            startpoint = new Point(e.X, e.Y);
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                Point p = PointToScreen(e.Location);
+                Location = new Point(p.X - this.startpoint.X, p.Y - this.startpoint.Y);
+
+            }
+        }
+        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragging = false;
+        }
+        private void label2_MouseDown(object sender, MouseEventArgs e)
+        {
+            dragging = true;
+            startpoint = new Point(e.X, e.Y);
+        }
+
+        private void label2_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                Point p = PointToScreen(e.Location);
+                Location = new Point(p.X - this.startpoint.X, p.Y - this.startpoint.Y);
+
+            }
+        }
+
+        private void label2_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragging = false;
+        }
+
+        private void pictureBox2_MouseDown(object sender, MouseEventArgs e)
+        {
+            dragging = true;
+            startpoint = new Point(e.X, e.Y);
+        }
+
+        private void pictureBox2_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                Point p = PointToScreen(e.Location);
+                Location = new Point(p.X - this.startpoint.X, p.Y - this.startpoint.Y);
+
+            }
+        }
+
+        private void pictureBox2_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragging = false;
+        }
+        #endregion
+
+
+        #region mixnimix.. close paintclass
+        private void pictureBox4_Paint(object sender, PaintEventArgs e)
+        {
+
+            Graphics z = e.Graphics;
+            Color mycolor = ColorTranslator.FromHtml("#000000");
+            SolidBrush mybrush = new SolidBrush(mycolor);
+            Pen pen = new Pen(ColorTranslator.FromHtml("#000000"));
+            z.DrawRectangle(pen, 7, 16, 12, 4);
+            z.FillRectangle(mybrush, 7, 16, 12, 4);
+        }
+
+        private void pictureBox3_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics z = e.Graphics;
+            Pen pen = new Pen(ColorTranslator.FromHtml("#000000"));
+            z.DrawLine(pen, 7, 7, 19, 19);
+            z.DrawLine(pen, 7, 19, 19, 7);
+            z.DrawLine(pen, 8, 7, 20, 19);
+            z.DrawLine(pen, 8, 19, 20, 7);
+        }
+        #endregion
+
+
+        #region minimize .. close
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+
+
+        #endregion
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+           
+            panel1.BackColor  = ColorTranslator.FromHtml("#292929");
+            pictureBox5.Hide();
+
+            MMDeviceEnumerator djshyama = new MMDeviceEnumerator();
+            var output = djshyama.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+            cDevice.Items.AddRange(output.ToArray());
+            var outputdvide = (MMDevice)cDevice.SelectedItem;
+
+
+            NAudio.CoreAudioApi.MMDeviceEnumerator devEnum = new NAudio.CoreAudioApi.MMDeviceEnumerator();
+            NAudio.CoreAudioApi.MMDeviceCollection devColl = devEnum.EnumerateAudioEndPoints(
+            NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.DeviceState.Active);
+
+            foreach (NAudio.CoreAudioApi.MMDevice d in devColl)
+            {
+                cDevice.Items.Add(d.FriendlyName);
+            }
+
+            if (cDevice.Items.Count > 0)
+            {
+                cDevice.Text = cDevice.Items[0].ToString();
+            }
+
+           Bitrate.Text = "192k";
+        }
+
+        private void Browse_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog browse = new FolderBrowserDialog();
+            browse.Description = "Select output folder";
+
+            if (browse.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                txtOutput.Text = browse.SelectedPath;
+            }
+
+            if (System.IO.Directory.Exists(txtOutput.Text) == false)
+            {
+                MessageBox.Show("Please choose a  output path !", "Error : ", MessageBoxButtons.OK);
+            }
+
+            FixOutputTextbox();
+        }
+
+        private void FixOutputTextbox()
+        {
+            if (txtOutput.Text.EndsWith("\\") == false)
+            {
+                txtOutput.Text += "\\";
+            }
+        }
+
+        // date output nama
+        private string GetOutputName()
+        {
+            FixOutputTextbox();
+            return txtOutput.Text +
+            DateTime.Now.Day.ToString() + "_" + DateTime.Now.Month.ToString() + "_" + DateTime.Now.Year.ToString() + "___" +
+            DateTime.Now.Hour.ToString() + "_" + DateTime.Now.Minute.ToString() + "_" + DateTime.Now.Second.ToString();
+        }
+
+        private void Record_Click(object sender, EventArgs e)
+        {
+
+
+          
+           
+
+
+            NAudio.CoreAudioApi.MMDevice currentDevice = null;
+
+            foreach (MMDevice d in new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
+            {
+                if (d.FriendlyName == cDevice.Text)
+                {
+                    currentDevice = d;
+                }
+            }
+
+            try
+            {
+                if (currentDevice == null)
+                {
+                    MessageBox.Show("Device not found", "Error : ", MessageBoxButtons.OK);
+                    return;
+                }
+
+            }
+            catch { }
+           
+
+            recorder = new PlaybackRecorder(currentDevice);
+
+            if (System.IO.Directory.Exists(txtOutput.Text) == false)
+            {
+                MessageBox.Show("Please choose a  output path !","Error : ",MessageBoxButtons.OK);
+                return;
+            }
+
+            FixOutputTextbox();
+
+            Record.Enabled = false;
+            Stop.Enabled = true;
+
+            currentOutput = GetOutputName();
+
+            recorder.Record(currentOutput + " Sound Record.wav");
+           
+            label6.Text = "Audio capture is : Start"; 
+
+            if(txtOutput.Text != null)
+            timer1.Start();
+            pictureBox5.Show();
+
+        }
+
+        private void Stop_Click(object sender, EventArgs e)
+        {
+            timer1.Stop();
+            pictureBox5.Hide();
+            recorder.Stop();
+            Stop.Enabled = true;
+
+            //Encode
+
+            string output = currentOutput;
+
+            SimpleFfmpegAudio encoder = new SimpleFfmpegAudio();
+
+            string codec = "pcm_s16le";
+
+            if (Wav.Checked == true)
+            {
+                output += ".wav";
+                codec = "pcm_s16le";
+                Bitrate.Enabled = false;
+                
+            }
+            else if (Mp3.Checked == true)
+            {
+                output += ".mp3";
+                codec = "libmp3lame";
+            }
+            else if (Ogg.Checked == true)
+            {
+                output += ".ogg";
+                codec = "libvorbis";
+            }
+
+            Debug.WriteLine("Arguments: " + SimpleFfmpegAudio.CreateArgs(codec, Bitrate.Text, output.Remove(output.LastIndexOf('.')) + " Sound Record.wav", output));
+            encoder.Start(SimpleFfmpegAudio.CreateArgs(codec, Bitrate.Text, output.Remove(output.LastIndexOf('.')) + " Sound Record.wav", output));
+
+            //Done encoding
+            System.IO.File.Delete(output.Remove(output.LastIndexOf('.')) + " Sound Record.wav");
+            Record.Enabled = true;
+            label6.Text = "Audio capture is : Stop";
+
+
+           
+           
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            _timeKeep += 1;
+
+            UpdateTimerLabel();
+
+            if (cDevice.SelectedItem != null)
+            {
+                var outputdvide = (MMDevice)cDevice.SelectedItem;
+                colorProgressBar1.Value = (int)(Math.Round(outputdvide.AudioMeterInformation.MasterPeakValue * 100));
+                colorProgressBar2.Value = (int)(Math.Round(outputdvide.AudioMeterInformation.MasterPeakValue * 100));
+            }
+        }
+
+        private void UpdateTimerLabel()
+        {
+            var minutes = _timeKeep / 60;
+            var seconds = _timeKeep % 60;
+
+            // String representation of the timer
+            var timerString = seconds < 10 ? $"{minutes}:0{seconds}" : $"{minutes}:{seconds}";
+            label4.Text = "Time: " + timerString;
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            //recorder.disposeclass();
+        }
+
+        private void Wav_CheckedChanged(object sender, EventArgs e)
+        {
+            if(Wav.Checked)
+            {
+                Bitrate.Enabled = false;
+            }
+        }
+
+        private void Mp3_CheckedChanged(object sender, EventArgs e)
+        {
+            if(Mp3.Checked)
+            {
+                Bitrate.Enabled = true;
+            }
+        }
+
+        private void Ogg_CheckedChanged(object sender, EventArgs e)
+        {
+            if(Ogg.Checked )
+            {
+                Bitrate.Enabled = true;
+            }
+        }
+    }
+}
